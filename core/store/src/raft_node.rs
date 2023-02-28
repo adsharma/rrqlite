@@ -3,6 +3,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use core_command::command;
+use core_sled::init_sled_db;
 use core_sled::openraft;
 use core_sled::openraft::error::CheckIsLeaderError;
 use core_tracing::tracing_futures::Instrument;
@@ -141,6 +142,9 @@ impl RqliteNode {
         if cfg!(target_os = "macos") {
             tracing::warn!("Disabled fsync for meta data tests. fsync on mac is quite slow");
             config.raft.no_sync = true;
+        }
+        if config.fsm.on_disk {
+            init_sled_db(format!("sled-db-{}", config.raft.id));
         }
 
         let fsm = SQLFsm::new_with_config(&config.fsm)?;

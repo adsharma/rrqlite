@@ -7,8 +7,11 @@ use rqlited::config::Config;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _conf = Config::load()?;
+    let mut _conf = Config::load()?;
     let _guards = init_global_tracing("rqlited", &_conf.log_dir, &_conf.log_level);
+
+    // copy node-id to raft
+    _conf.store.raft.id = _conf.node_id;
 
     let node = RqliteNode::start(&_conf.store).await?;
     let mut stop_handler = StopHandle::create();

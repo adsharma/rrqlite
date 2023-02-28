@@ -60,8 +60,8 @@ pub struct Config {
     pub node_x509_key: String,
 
     // NodeID is the Raft ID for the node.
-    #[clap(long = "node-id", env = "RQLITED_NODE_ID", default_value = "")]
-    pub node_id: String,
+    #[clap(long = "node-id", env = "RQLITED_NODE_ID", default_value = "0")]
+    pub node_id: u64,
 
     // BootstrapExpect is the minimum number of nodes required for a bootstrap.
     #[clap(
