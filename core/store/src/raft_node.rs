@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -8,6 +9,7 @@ use core_sled::openraft;
 use core_sled::openraft::error::CheckIsLeaderError;
 use core_tracing::tracing_futures::Instrument;
 use openraft::{Config, SnapshotPolicy};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tokio::sync::{watch, Mutex, RwLock};
 use tokio::task::JoinHandle;
 use tonic::Status;
@@ -84,12 +86,10 @@ impl RqliteNode {
         tracing::info!("about to start raft grpc on resolved addr {}", addr);
 
         let addr_str = addr.to_string();
-        let ret = addr.parse::<std::net::SocketAddr>();
+        let ret = addr.to_socket_addrs().expect("unable to resolve").next();
         let addr = match ret {
-            Ok(addr) => addr,
-            Err(e) => {
-                return Err(StoreError::Other(anyerror::AnyError::new(&e)));
-            }
+            Some(addr) => addr,
+            None => SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 4002),
         };
         let node_id = mn.sto.id;
 
